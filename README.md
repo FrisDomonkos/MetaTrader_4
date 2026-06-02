@@ -1,285 +1,134 @@
-Breakout Spike Trading EA
+# Breakout Spike Trading EA (MQL4)
 
-A MetaTrader 4 Expert Advisor (MQL4) that identifies high-volume bullish breakouts from consolidation zones and manages positions using a trailing stop methodology.
+## Overview
 
-Overview
+This Expert Advisor (EA) is a long-only breakout trading system for MetaTrader 4. It detects upward price movements emerging from periods of consolidation and executes trades based on momentum, volume, and price action filters.
 
-This Expert Advisor is a long-only breakout strategy designed to capture strong upward price movements following periods of low volatility and market consolidation.
+The EA also logs detailed market data and technical indicators for each trade, making it suitable for quantitative analysis.
 
-The system combines:
+---
 
-Price breakout detection
-Volume confirmation
-Consolidation filtering
-Upper wick analysis
-Dynamic position sizing
-Trailing stop management
-Trade duration controls
-Extensive indicator logging for quantitative analysis
+## Strategy Type
 
-In addition to trade execution, the EA logs dozens of technical indicators at trade entry, making it suitable for machine learning and statistical research.
+- Breakout Trading
+- Momentum-Based System
+- Long Only
+- Single Position at a Time
 
-Features
-Entry Filters
-Breakout detection based on configurable percentage move
-Volume confirmation using historical average volume
-Consolidation range analysis
-Upper wick rejection filter
-Single-position enforcement
-Trade Management
-Dynamic lot sizing
-Trailing stop-loss
-Follow-through validation
-Maximum trade duration control
-Data Collection
-Logs all trade entries
-Logs all trade exits
-Records 30+ technical indicators
-Generates datasets suitable for ML pipelines
-Strategy Logic
-Entry Conditions
+---
 
-A BUY trade is opened only when all conditions below are satisfied.
+## Features
 
-1. Price Breakout
-Current Price - Current Candle Open
->
-Current Candle Open × ChangeTrigger
+### Entry Logic
+- Price breakout detection
+- Volume spike confirmation
+- Market consolidation filter
+- Upper wick rejection filter
+- Spike threshold trigger
 
-Default:
+### Trade Management
+- Dynamic lot sizing based on account balance
+- Trailing stop-loss system
+- Follow-through validation
+- Maximum trade duration control
 
-ChangeTrigger = 0.01
+### Data Logging
+- Trade entry and exit logging
+- 30+ technical indicators recorded per trade
+- CSV dataset generation for analysis
 
-Meaning:
+---
 
-Price must increase at least 1% from the current reference price.
-2. Volume Confirmation
-Current Volume
->
-Average Volume × VolumeMultiplier
+## Entry Conditions
 
-Default:
+A BUY trade is opened only when ALL conditions are satisfied:
 
-VolumeMultiplier = 2
+### 1. Price Breakout
 
-Meaning:
+The current price must rise by a configured threshold in a given candle above its lowest price. 
 
-Current volume must exceed twice the average volume of the previous 20 candles.
-3. Consolidation Filter
+---
 
-The EA examines the previous Lookback candles.
+### 2. Volume Filter
 
-Range %
-=
-((Highest High - Lowest Low) / Lowest Low) × 100
+Increased relative volume further indicates a brakeout event.
 
-Trading is allowed only when:
+---
 
-Range % ≤ MaxRangePercent
+### 3. Consolidation Filter
 
-Defaults:
+The price must be in a tight range. Oscillating prices suggest indecisive market.
 
-Lookback = 20
-MaxRangePercent = 3.0
+---
 
-Purpose:
+### 4. Upper Wick Filter
 
-Identify sideways market conditions before a breakout.
-4. Upper Wick Filter
+Prevents entries after rejection candles
 
-The previous candle is analysed.
+---
 
-Upper Wick %
-=
-Upper Wick Size / Candle Range × 100
+### 5. Single Position Rule
 
-Trading is allowed only when:
+Only one trade is allowed at a time.
 
-Upper Wick % ≤ UpperWickTolerance
+---
 
-Default:
+## Position Sizing
 
-UpperWickTolerance = 20
+Dynamic lot sizing based on account balance:
 
-Purpose:
+---
 
-Avoid candles showing strong rejection from higher prices.
-5. No Existing Position
+## Risk Management
 
-Only one position may be active at any given time.
+### Trailing Stop Loss
 
-6. Indicator Filter
+- Moves stop loss upward as price increases
+- Locks in profit
+- Never moves downward
 
-Currently disabled.
+---
 
-bool Indicator_Filter(...)
-{
-    return true;
-}
+### Follow-Through Check
 
-The intended implementation appears to have been:
+Weak breakouts may be closed early if momentum fails.
 
-ADX > 25
-ATR < 0.8%
-Position Sizing
+---
 
-Position size scales automatically with account balance.
+## Logging System
 
-Formula:
+### Open Trades Log
 
-(Account Balance / Starting Balance) × Lot Size
-
-Defaults:
-
-StartingBalance = 10000
-LotSize = 3
-
-Example:
-
-Balance	Position Size
-$5,000	1.5 Lots
-$10,000	3 Lots
-$20,000	6 Lots
-Risk Management
-Initial Stop Loss
-Entry Price × (1 - TrailingDistance)
-
-Default:
-
-TrailingDistance = 0.01
-
-Meaning:
-
-Initial stop loss is placed 1% below entry.
-Trailing Stop
-
-The stop loss is continuously moved upward as price advances.
-
-Characteristics:
-
-Never moves downward
-Locks in profits
-Allows trends to continue
-Follow-Through Validation
-
-After a specified number of candles, the EA checks whether the breakout has continued.
-
-Parameters:
-
-FollowThroughTimeLimit = 3
-FollowThroughThreshold = 1.02
-
-Purpose:
-
-Exit weak breakouts early
-Retain strong momentum trades
-Maximum Trade Duration
-
-The EA can automatically close trades after a specified number of days.
-
-Parameter:
-
-MaxTradeDurationDays
-
-Purpose:
-
-Prevent excessive holding periods
-Limit long-term exposure
-Technical Indicator Logging
-
-At trade entry, the EA records a large collection of indicators.
-
-Trend Indicators
-EMA(10)
-EMA(50)
-EMA(100)
-ADX
-Parabolic SAR
-Ichimoku
-Envelopes
-Momentum Indicators
-MACD
-RSI(7)
-RSI(14)
-RSI(21)
-RSI(28)
-RSI(35)
-Stochastic
-Momentum
-CCI
-Williams %R
-RVI
-Volatility Indicators
-Bollinger Bands
-ATR
-Standard Deviation
-Volume Indicators
-Volume
-OBV
-Accumulation Distribution
-MFI
-Hybrid Indicators
-Awesome Oscillator
-Accelerator Oscillator
-DeMarker
-Alligator
-Output Files
-Open Trade Log
-open_trades_test.csv
-
-Contains:
-
-Trade information
-Entry price
-Entry timestamp
-Market indicators
-Technical indicator values
-
-Purpose:
-
-Machine learning datasets
-Backtest analysis
-Feature engineering
-Closed Trade Log
-closed_trades_test.csv
-
-Contains:
-
-Trade ticket
-Exit price
-Profit/Loss
-Exit timestamp
-Strategy parameters
-
-Purpose:
-
-Performance analysis
-Trade outcome tracking
-Workflow
-Initialization
-│
-├── Create CSV logs
-├── Calculate average volume
-│
-└── On Every Tick
-     │
-     ├── Detect new candle
-     ├── Update filters
-     │     ├── Volume
-     │     ├── Consolidation
-     │     └── Upper Wick
-     │
-     ├── Check active trades
-     │
-     ├── Manage open positions
-     │     ├── Time limit
-     │     ├── Follow-through check
-     │     └── Trailing stop
-     │
-     └── Evaluate entry conditions
-           │
-           ├── Breakout detected?
-           ├── Volume confirmed?
-           ├── Consolidation valid?
-           ├── Upper wick acceptable?
-           └── Open BUY order
+Stores:
+- Entry price and time
+- Trade type
+- Indicator snapshot
+- Strategy configuration ID
+
+---
+
+### Closed Trades Log
+
+Stores:
+- Exit price
+- Profit/Loss
+- Close time
+- Trade ticket
+- Strategy parameters
+
+---
+
+## Workflow
+
+1. EA initializes
+2. Logs are created
+3. Average volume is calculated
+4. Every tick:
+   - Detect new candle
+   - Update filters (volume, consolidation, wick)
+   - Check open trades
+   - Manage trailing stop
+   - Evaluate entry conditions
+5. Open BUY trade if conditions are met
+6. Log trade data
+7. Manage trade until exit
