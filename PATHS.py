@@ -1,0 +1,1 @@
+DATA_FOLDER = 'C:/Users/User/Desktop/Python/Metatrader_4/data/'
