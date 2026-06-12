@@ -3,21 +3,43 @@ import pandas as pd
 def calc_profit(close_df: pd.DataFrame,
                 TOP_N: int = 15
                ) -> pd.DataFrame:
-    '''
-    Description:
-    - Calculates the profit for each test run and sorts them based on it
-    
-    Inputs: 
-    - close_df: pandas dataframe containing transaction data related to the time of closure (i.e. Profit)
-    - TOP_N: How many rows to display
-    
+    """
+    Calculates profit statistics for each test run.
+
     Outputs:
-    - profit_df: pandas dataframe containing profit values for each test run
-    '''
-    
-    profit_df = close_df.groupby(["Test_ID","Type"], as_index=False)["Profit"].sum()
-    
-    return profit_df.sort_values(by='Profit',ascending=False).head(TOP_N)
+    - Profit: total profit
+    - Trade_Count: number of trades
+    - Lowest_Balance: worst cumulative profit state reached
+    - Winning_Profit: sum of profitable trades
+    - Winning_Count: number of profitable trades
+    - Losing_Profit: sum of losing trades
+    - Losing_Count: number of losing trades
+    """
+
+    df = close_df.copy()
+
+    # Running account balance (profit) within each test
+    df["Running_Balance"] = df.groupby(["Test_ID", "Type"])["Profit"].cumsum()
+
+    profit_df = df.groupby(["Test_ID", "Type"], as_index=False).agg(
+        Profit=("Profit", "sum"),
+        Trade_Count=("Profit", "size"),
+
+        # Worst drawdown point from starting balance of 0
+        Lowest_Balance=("Running_Balance", "min"),
+
+        Winning_Profit=("Profit", lambda x: x[x > 0].sum()),
+        Winning_Count=("Profit", lambda x: (x > 0).sum()),
+
+        Losing_Profit=("Profit", lambda x: x[x < 0].sum()),
+        Losing_Count=("Profit", lambda x: (x < 0).sum()),
+    )
+
+    return (
+        profit_df
+        .sort_values(by="Profit", ascending=False)
+        .head(TOP_N)
+    )
 
 def calc_profit_with_condition(df: pd.DataFrame,
                                filter_mask: tuple,
