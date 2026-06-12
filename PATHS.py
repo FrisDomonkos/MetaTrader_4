@@ -1,1 +1,1 @@
-DATA_FOLDER = 'C:/Users/User/Desktop/Python/Metatrader_4/data/'
+DATA_FOLDER = 'C:/Users/User/Desktop/Git_Code/data/'

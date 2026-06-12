@@ -50,8 +50,7 @@ def prepare_data(df: pd.DataFrame
     
     
     df = df.drop(['Symbol_open','OpenTime','OpenTime',
-                  'Type_close','Symbol_close','ClosePrice', 'CloseTime', 'ChangeTrigger',
-                  'LotSize','StopLossParameter', 'TakeProfitParameter', 'TrailingStep','TradeLong'],
+                  'Symbol_close','ClosePrice', 'CloseTime',],
                  axis=1)
     
     df['Target'] = (df["Profit"] > 0).astype(int)

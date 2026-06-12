@@ -1,7 +1,9 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def calc_profit(close_df: pd.DataFrame,
-                TOP_N: int = 15
+                TOP_N: int = 15,
+                Mask: pd.DataFrame = None
                ) -> pd.DataFrame:
     """
     Calculates profit statistics for each test run.
@@ -15,6 +17,18 @@ def calc_profit(close_df: pd.DataFrame,
     - Losing_Profit: sum of losing trades
     - Losing_Count: number of losing trades
     """
+    def max_drawdown_metrics(profits, initial_balance=10000):
+        equity = initial_balance + profits.cumsum()
+
+        peak = equity.cummax()
+
+        drawdown = peak - equity
+        drawdown_pct = drawdown / peak  # relative to peak
+
+        return pd.Series({
+            "Max_Drawdown": drawdown.max(),
+            "Max_Drawdown_Pct": drawdown_pct.max()
+        })
 
     df = close_df.copy()
 
@@ -23,16 +37,17 @@ def calc_profit(close_df: pd.DataFrame,
 
     profit_df = df.groupby(["Test_ID", "Type"], as_index=False).agg(
         Profit=("Profit", "sum"),
+        Max_Drawdown=("Profit", lambda x: max_drawdown_metrics(x, 10000)["Max_Drawdown"]),
+        Max_Drawdown_Pct=("Profit", lambda x: max_drawdown_metrics(x, 10000)["Max_Drawdown_Pct"] *100),
         Trade_Count=("Profit", "size"),
-
-        # Worst drawdown point from starting balance of 0
-        Lowest_Balance=("Running_Balance", "min"),
 
         Winning_Profit=("Profit", lambda x: x[x > 0].sum()),
         Winning_Count=("Profit", lambda x: (x > 0).sum()),
 
         Losing_Profit=("Profit", lambda x: x[x < 0].sum()),
         Losing_Count=("Profit", lambda x: (x < 0).sum()),
+
+
     )
 
     return (
