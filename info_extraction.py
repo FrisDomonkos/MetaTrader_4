@@ -64,7 +64,7 @@ def calc_profit_with_condition(df: pd.DataFrame,
     
     '''
     Description:
-    - Goal is to apply the results of a classification model
+    - Goal is to apply the results of a decision tree classification model
     - Use a filter mask to achive the classification
     - Calculates the profit for each filtered test run and sorts them based on it
 

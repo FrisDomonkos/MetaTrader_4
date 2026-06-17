@@ -58,3 +58,35 @@ def prepare_data(df: pd.DataFrame
 
     df = df.drop('OpenPrice',axis=1)
     return df
+
+def assign_candle_id(
+    df: pd.DataFrame,
+    time_col: str="OpenTime",
+    candle_size: str="15min",
+    id_col: str="candle_id"
+) -> pd.DataFrame:
+    '''
+    Description:
+    - Create candle_id column based on OpenTime
+    - Create target columns
+    
+    Inputs: 
+    - df: pandas dataframe 
+    - time_col: column containing the date
+    - candle_size: candle size to base the assigment on
+    - id_col: name of the new col
+    
+    Outputs:
+    - result: input df + the new col
+    '''
+    result = df.copy()
+
+    ts = pd.to_datetime(result[time_col])
+
+    # Convert candle size to nanoseconds
+    candle_ns = pd.Timedelta(candle_size).value
+
+    # Unix timestamp in nanoseconds
+    result[id_col] = ts.astype("int64") // candle_ns
+
+    return result
